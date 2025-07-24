@@ -1,90 +1,109 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { UserCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-
+import { Link, useNavigate } from 'react-router-dom';
 
 const Signup = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  // cons {Signup, handleSubmit} = useForm();
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'staff'
+  });
   const [error, setError] = useState('');
-  const { signup } = useAuth();
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    localStorage.setItem('user', JSON.stringify(data));
-    const {Signup, handleSubmit} = useForm();
-    alert('User registered successfully');
-    navigate('/login');}
-
-  const NavBar = () => (
-    <nav className="flex justify-end space-x-4 mb-6">
-      <button
-        className="px-4 py-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
-        onClick={() => navigate('/')}
-      >
-        Landing
-      </button>
-      <button
-        className="px-4 py-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
-        onClick={() => navigate('/login')}
-      >
-        Login
-      </button>
-      <button
-        className="px-4 py-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
-        onClick={() => navigate('/signup')}
-      >
-        Signup
-      </button>
-    </nav>
-  );
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!formData.username || !formData.email || !formData.password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+
     try {
-      await signup(email, password);
-      navigate('/login');
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.msg || 'Something went wrong');
+      }
+
+      // Save token and redirect
+      localStorage.setItem('token', data.token);
+      
+      if (formData.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/staff/dashboard');
+      }
+
     } catch (err) {
-      setError('Signup failed');
+      setError(err.message);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-blue-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8">
-        <NavBar />
-        <div className="flex flex-col items-center">
-          <UserCircle size={64} className="text-blue-600 mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-800">Create your account</h2>
-        </div>
-        <form className="mt-6" onSubmit={handleSubmit}>
-          {error && <p className="text-red-600 text-sm text-center mb-2">{error}</p>}
-          <div className="space-y-4">
-            <input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>Create Your Account</h2>
+        <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
+          Join WorkNest today
+        </p>
+        
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="username">Username</label>
+            <input type="text" id="username" name="username" className="form-control" value={formData.username} onChange={handleInputChange} required />
           </div>
-          <button
-            type="submit"
-            className="mt-6 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-          >
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">Email Address</label>
+            <input type="email" id="email" name="email" className="form-control" value={formData.email} onChange={handleInputChange} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">Password</label>
+            <input type="password" id="password" name="password" className="form-control" value={formData.password} onChange={handleInputChange} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="role">Register As</label>
+            <select id="role" name="role" className="form-control" value={formData.role} onChange={handleInputChange}>
+              <option value="staff">Staff Member</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </div>
+          
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginBottom: '20px' }}>
             Sign Up
           </button>
+          
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', color: '#666' }}>
+              Already have an account?{' '}
+              <Link to="/login" style={{ color: '#007bff', textDecoration: 'none' }}>
+                Sign in here
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>
