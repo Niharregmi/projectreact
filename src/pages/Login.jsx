@@ -1,92 +1,150 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { UserCircle } from 'lucide-react';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    role: 'staff'
+  });
   const [error, setError] = useState('');
-  const { login, isAuthenticated, user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-    
-    const NavBar = () => (
-      <nav className="flex justify-end space-x-4 mb-6">
-        <button
-          className="px-4 py-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
-          onClick={() => navigate('/')}
-        >
-          Landing
-        </button>
-        <button
-          className="px-4 py-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
-          onClick={() => navigate('/login')}
-        >
-          SIgn up
-        </button>
-        <button
-          className="px-4 py-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
-          onClick={() => navigate('/signup')}
-        >
-          Login
-        </button>
-      </nav>
-    );
-
-    
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (user?.role === 'admin') {
-        navigate('/admin-dashboard');
-      } else {
-        navigate('/staff-dashboard');
-      }
-    }
-  }, [isAuthenticated, user, navigate]);
-
-  const handleSubmit = (data) => {
-    data.preventDefault();
-    try {
-       login(email, password);
-    } catch (err) {
-      setError('Invalid credentials');
-    }
+  const { login } = useAuth();
+  
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await login(formData.email, formData.password);
+      
+      // Navigate to the correct dashboard
+      if (response.user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/staff/dashboard');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-blue-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8">
-        <div className="flex flex-col items-center">
-          <UserCircle size={64} className="text-blue-600 mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-800">Sign in to your account</h2>
-        </div>
-        <form className="mt-6" onSubmit={handleSubmit}>
-          {error && <p className="text-red-600 text-sm text-center mb-2">{error}</p>}
-          <div className="space-y-4">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>Welcome Back</h2>
+        <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
+          Sign in to your WorkNest account
+        </p>
+
+        {error && <div className="alert alert-danger">{error}</div>}
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">Email Address</label>
             <input
               type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="email"
+              name="email"
+              className="form-control"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Enter your email"
               required
             />
           </div>
-          <button
-            type="submit"
-            className="mt-6 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                className="form-control"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Enter your password"
+                style={{ paddingRight: '45px' }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#666',
+                  fontSize: '16px',
+                  padding: '4px'
+                }}
+              >
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label" htmlFor="role">Login As</label>
+            <select 
+              id="role" 
+              name="role" 
+              className="form-control" 
+              value={formData.role} 
+              onChange={handleInputChange}
+            >
+              <option value="staff">Staff Member</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </div>
+          
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            style={{ width: '100%', marginBottom: '20px' }}
+            disabled={loading}
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
+          
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+              Don't have an account?{' '}
+              <Link to="/signup" style={{ color: '#007bff', textDecoration: 'none' }}>
+                Sign up here
+              </Link>
+            </p>
+            <Link to="/" style={{ fontSize: '14px', color: '#666', textDecoration: 'none' }}>
+              ← Back to Home
+            </Link>
+          </div>
         </form>
       </div>
     </div>
