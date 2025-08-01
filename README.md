@@ -70,22 +70,23 @@ This is a college project developed as part of the curriculum at **Softwarica Co
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Dipendra982/employee_management.git
-   cd worknest
+   git clone https://github.com/Niharregmi/projectreact.git
+   cd projectreact
    ```
 
-2. **Install dependencies**
+2. **Install Frontend dependencies**
    ```bash
-   # Frontend dependencies
+   cd frontend
    npm install
-   
-   # Backend dependencies
-   cd backend
-   npm install
-   cd ..
    ```
 
-3. **Environment Setup**
+3. **Install Backend dependencies**
+   ```bash
+   cd ../backend
+   npm install
+   ```
+
+4. **Environment Setup**
    ```bash
    # Create .env file in backend directory
    cd backend
@@ -93,42 +94,47 @@ This is a college project developed as part of the curriculum at **Softwarica Co
    # Edit .env with your database credentials
    ```
 
-4. **Database Setup**
+5. **Database Setup**
    ```bash
    cd backend
    npm run setup-db
    ```
 
-5. **Start Development Servers**
+6. **Start Development Servers**
    ```bash
    # Terminal 1 - Backend (from backend directory)
+   cd backend
    npm run dev
    
-   # Terminal 2 - Frontend (from root directory)
+   # Terminal 2 - Frontend (from frontend directory)
+   cd frontend
    npm run dev
    ```
 
-6. **Access the Application**
+7. **Access the Application**
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:5001
 
 ## Project Structure
 
 ```
-worknest/
-├── src/                    # Frontend React application
-│   ├── components/         # Reusable UI components
-│   ├── pages/             # Page components
-│   ├── contexts/          # React contexts
-│   └── lib/               # Utilities and API client
-├── backend/               # Backend Node.js application
+projectreact/
+├── frontend/              # React Frontend Application
+│   ├── src/               # React source code
+│   │   ├── components/    # Reusable UI components
+│   │   ├── pages/         # Page components
+│   │   ├── contexts/      # React contexts
+│   │   └── lib/           # Utilities and API client
+│   ├── public/            # Static assets
+│   ├── Testing/           # Frontend test suites
+│   └── package.json       # Frontend dependencies
+├── backend/               # Node.js Backend Application
 │   ├── models/            # Database models
 │   ├── routes/            # API routes
 │   ├── middleware/        # Authentication middleware
-│   └── config/            # Database configuration
-└── Testing/               # Test suites
-    ├── frontend/          # Frontend tests
-    └── backend/           # Backend tests
+│   ├── config/            # Database configuration
+│   └── package.json       # Backend dependencies
+└── README.md              # Project documentation
 ```
 
 ## Testing
@@ -136,15 +142,17 @@ worknest/
 Comprehensive test suite included with coverage for authentication, components, and API endpoints.
 
 ```bash
-cd Testing
+# Frontend Testing
+cd frontend/Testing
 npm install
+npm test
+
+# Backend Testing
+cd backend
 npm test
 ```
 
-See [Testing/README.md](Testing/README.md) for detailed testing information.
-
-
-
+See [frontend/Testing/README.md](frontend/Testing/README.md) for detailed testing information.
 
 ## Support
 
